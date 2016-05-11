@@ -8,14 +8,21 @@
 #include<strings.h>
 #include<ncurses.h>
 #include<unistd.h>
+#include<assert.h>
 #include<ctype.h>
 
 /*some essention macros*/
-#define BOOL short
+#define BOOL   short
 #define IN
 #define OUT
+#define FALSE  0
+#define TRUE   1
+
 
 #define array_size(x)  (sizeof(x)/sizeof(x[0]))
+#define cat_command(x) CMD_##x
+
+
 
 static inline 
 UPPER_STR(char *s)
@@ -28,10 +35,8 @@ UPPER_STR(char *s)
 	}
 }
 
-#define cat_command(x) CMD_##x
 
-
-/*define some common used command*/
+/*define some common used commands*/
 enum CommCommand{
 	CMD_LS,
 	CMD_FIND,

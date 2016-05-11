@@ -2,7 +2,7 @@
 #include "debug.h"
 
 #define COMMAND_NUMS  32
-
+#define CURSES_MOD  1
 
 static const char  usage[]=
 "Usage for tview\n"
@@ -32,6 +32,13 @@ struct CmdConvertTbl cmdtbl[] ={
 };
 
 
+enum commandType{
+	IS_LS,
+	IS_FIND,
+	IS_GREP,
+	IS_MAX,
+};
+
 
 
 static inline void
@@ -53,8 +60,6 @@ show_command(void)
 		i++;
 	}
 }
-
-
 
 
 static BOOL 
@@ -116,7 +121,7 @@ convert_command_tbl(char *cmd)
  *may some commands need argument,so here will
  *make a dicision
  */
-static void
+static int
 default_action(char *cmd)
 {
 	int ret;
@@ -125,7 +130,7 @@ default_action(char *cmd)
 	switch(ret)
 	{
 			case CMD_LS:
-				RenderLs_dft();
+				return IS_LS;
 				break;
 			case CMD_FIND:
 				CMD_LOG("find","%s\n","argument is needed");
@@ -136,7 +141,8 @@ default_action(char *cmd)
 			default:
 				CMD_ERR(cmd,"%s","This command may not show output by ncurses");
 	}
-
+	
+	return -1;
 }
 
 
@@ -144,10 +150,13 @@ default_action(char *cmd)
 int 
 parser_option(int argc, char **argv)
 {
-	if(argc < 2)
+	if(argc < 2){
 		show_usage();
+		return -1;
+	}
 
 	int ret;
+	
 	/**
 	 * Here may be two suitations:
 	 * 1. tview command
@@ -157,15 +166,14 @@ parser_option(int argc, char **argv)
 	{
 		if(compare_command(argv[1]))
 		{
-			default_action(argv[1]);	
+			ret = default_action(argv[1]);
+			return ret;	
 		}else if(ret = compare_option(argv[1]))
 		{
 			if(ret == 1)
 				show_usage();
 			else if(ret == 2)
 				show_command();
-
-			
 		}else
 		{
 			/*error, just show the usage*/
@@ -173,7 +181,7 @@ parser_option(int argc, char **argv)
 		}
 	}
 
-
+	return -1;
 }
 
 
@@ -213,6 +221,9 @@ int
 main(int argc,char **argv)
 {
 	FILE *fp;
+	char ch;
+	int  ret; 
+
 
 	fp = fopen("config","r+");
 	if(fp == NULL)
@@ -222,7 +233,24 @@ main(int argc,char **argv)
 	fclose(fp);
 	convert_command();
 	
-	parser_option(argc, argv);
+	ret = parser_option(argc, argv);
+	if(ret == -1)
+		exit(1);
+
+#if CURSES_MOD == 1
+	Init_Screen();
+#endif 
+	
+	if(ret == IS_LS)
+		RenderLs_dft();
+
+#if CURSES_MOD == 1
+	getch();
+#endif
+
+#if CURSES_MOD == 1
+	quit(0);
+#endif 
 
 	return 0;
 }
