@@ -40,14 +40,5 @@ struct line_infos{
 	int fg, bg, attr;   /*Color and text attribution for the lines*/
 };
 
-struct line_infos line_info[] = {
-#define LINE(type, line, fg, bg, attr) \
-	{ (line), sizeof(line),(fg),(bg), (attr)}
-	LINE_INFO
-#undef LINE
-};
-
-BOOL cursed = FALSE;
-WINDOW *status_win;
 
 #endif /*nwin.h*/

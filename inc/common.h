@@ -50,6 +50,22 @@ struct CmdConvertTbl{
 	int  value;
 };
 
+enum request {
+	REQ_OFFSET = KEY_MAX + 1,
+
+	REQ_VIEW_MAIN,
+	REQ_OPEN_VIM,
+	REQ_MOVE_UP,
+	REQ_MOVE_DOWN,
+
+	REQ_SCREEN_RESIZE,
+	REQ_VIEW_CLOSE,
+};
+
+struct keymap{
+	int shortcut;
+	int request;
+};
 
 
 

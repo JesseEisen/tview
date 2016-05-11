@@ -3,6 +3,15 @@
 #include "nwin.h"
 #include <unistd.h>
 
+struct line_infos line_info[] = {
+#define LINE(type, line, fg, bg, attr) \
+	{ (line), sizeof(line),(fg),(bg), (attr)}
+	LINE_INFO
+#undef LINE
+};
+
+BOOL cursed = FALSE;
+WINDOW *status_win;
 
 void __NORETURN
 quit(int sig)

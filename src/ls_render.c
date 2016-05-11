@@ -55,7 +55,13 @@ GenerateFileInfo(char *line)
 	name = lsview->fileinfo[lsview->fileno].name;
 	/*second get the filetype */
 	GatherFileType(name,lsview->fileinfo[lsview->fileno].type);
-	lsview->fileno++;
+}
+
+
+void 
+Draw_LS_OutPut()
+{
+		
 }
 
 
@@ -84,11 +90,14 @@ GatherOutPut_ls(FILE *fp)
 			continue;
 		}
 		GenerateFileInfo(line);
-		mvwaddstr(stdscr,y,0,lsview->fileinfo[lsview->fileno-1].type);
-		mvwaddstr(stdscr,y,40,lsview->fileinfo[lsview->fileno-1].size);
-		mvwaddstr(stdscr,y,60,lsview->fileinfo[lsview->fileno-1].name);
+		mvwaddstr(stdscr,y,0,lsview->fileinfo[lsview->fileno].type);
+		mvwaddstr(stdscr,y,40,lsview->fileinfo[lsview->fileno].size);
+		mvwaddstr(stdscr,y,60,lsview->fileinfo[lsview->fileno].name);
+		lsview->fileno++;
 		y++;
 	}
+	/*when all the input is saved into*/
+	Draw_LS_OutPut();
 	refresh();
 }
 
@@ -112,3 +121,12 @@ RenderLs_dft(void)
 
 	pclose(pipe_ls);
 }
+
+
+void 
+RenderLs(void)
+{
+	RenderLs_dft();
+}
+
+

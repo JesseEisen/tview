@@ -1,5 +1,7 @@
 #include "common.h"
 #include "debug.h"
+#include "nwin.h"
+
 
 #define COMMAND_NUMS  32
 #define CURSES_MOD  1
@@ -31,6 +33,19 @@ struct CmdConvertTbl cmdtbl[] ={
 	{"grep",CMD_GREP},
 };
 
+static struct keymap keymap[] = {
+	{'m',  		REQ_VIEW_MAIN},
+	{'q', 		REQ_VIEW_CLOSE},
+	{'k',  		REQ_MOVE_UP},
+	{'j',  		REQ_MOVE_DOWN},
+	{KEY_UP, 	REQ_MOVE_UP},
+	{KEY_DOWN, 	REQ_MOVE_DOWN},
+	
+	{'e',   	REQ_OPEN_VIM},
+	{KEY_RIGHT, REQ_OPEN_VIM},
+};
+
+char *vim_cmd;
 
 enum commandType{
 	IS_LS,
@@ -39,6 +54,15 @@ enum commandType{
 	IS_MAX,
 };
 
+/*parse mode return*/
+int command_type;
+extern WINDOW *status_win;
+
+void
+do_nothing(void)
+{
+	/*do nothing*/
+}
 
 
 static inline void
@@ -53,12 +77,12 @@ show_command(void)
 	int i = 0;
 	
 	printf("----Current Support command ----\n");
-	printf("You can add some command in the config\n");
 	while(command[i])
 	{
-		printf("-%s", command[i]);
+		printf("-%s\n", command[i]);
 		i++;
 	}
+	printf("You can add some command in the config\n");
 }
 
 
@@ -216,14 +240,84 @@ convert_command(void)
 	}
 }
 
+void 
+open_view(void)
+{
+	switch(command_type){
+		case IS_LS:
+			RenderLs();
+			break;
+		case IS_GREP:
+			RenderGrep();
+			break;
+		case IS_FIND:
+			RenderFind();
+			break;
+		default:
+			do_nothing();
+			break;
+	}
+}
+
+
+void
+fresh_view(int key)
+{
+
+}
+
+
+int 
+view_control(int key)
+{
+	switch(key){
+		case REQ_MOVE_DOWN:
+		case REQ_MOVE_UP:
+			fresh_view(key);
+			break;
+		case REQ_VIEW_CLOSE:
+			quit(0);
+			break;
+		case REQ_OPEN_VIM:
+			def_prog_mode();    /*save current tty modes*/
+			endwin();			/*temporarily leave curses*/
+			system(vim_cmd);	/*run shell*/
+			reset_prog_mode();	/*return to the previous tty mode*/
+			break;
+		case REQ_VIEW_MAIN:
+			open_view(); 
+			break;
+		default:
+			return 1;
+	}	
+
+	return 1;
+}
+
+
+static enum request
+get_request(int key)
+{
+	int i;
+
+	for(i = 0; i < array_size(keymap);i++){
+		if(keymap[i].shortcut == key)
+			return keymap[i].request;
+	}
+
+	return (enum request) key;
+}
+
+
 
 int 
 main(int argc,char **argv)
 {
 	FILE *fp;
 	char ch;
-	int  ret; 
-
+	
+	enum request request;
+	request = REQ_VIEW_MAIN;
 
 	fp = fopen("config","r+");
 	if(fp == NULL)
@@ -233,16 +327,20 @@ main(int argc,char **argv)
 	fclose(fp);
 	convert_command();
 	
-	ret = parser_option(argc, argv);
-	if(ret == -1)
+	command_type = parser_option(argc, argv);
+	if(command_type == -1)
 		exit(1);
 
 #if CURSES_MOD == 1
 	Init_Screen();
 #endif 
 	
-	if(ret == IS_LS)
-		RenderLs_dft();
+	while(view_control(request))
+	{
+		 ch = wgetch(status_win);
+		 request = get_request(ch);
+	}
+
 
 #if CURSES_MOD == 1
 	getch();
