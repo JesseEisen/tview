@@ -99,7 +99,8 @@ Init_Screen(void)
 	status_win = newwin(1,0,y-1,0);
 	if(!status_win)
 		view_err("Failed to create status window");
-
+	
+	scrollok(stdscr,TRUE);
 	keypad(status_win, TRUE); /*here can input some key*/
 	wbkgdset(status_win,get_line_attr(LINE_STATUS));
 }

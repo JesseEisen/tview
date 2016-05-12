@@ -64,27 +64,50 @@ GenerateFileInfo(char *line)
 	GatherFileType(name,lsview->fileinfo[lsview->fileno].type);
 }
 
-
+/**
+ * This function is used to draw the ls output, 
+ * we store all the output of the ls into a global
+ * struct lsview. so we render each item one by one
+ * and support the scroll.
+ * */
 void 
 Draw_LS_OutPut()
 {
 	int totallines = lsview->fileno;  
-	int i,highlight;
+	int i,highlight,j=0;
+	int start, end;
 	enum line_type  type;
-		
+	
+	start = 0;
 	highlight = g_current + g_change;
-	if(highlight < 0)
+	if(highlight <= 0)
 	{
 		mvwaddstr(status_win,0,0,"At the top");
 		highlight = 0;
-	}else if(highlight >= totallines)
+	}else if(highlight <= LINES - 2){
+		if(highlight == totallines) {/*mean at the end */
+			mvwaddstr(status_win,0,0,"At the end");
+			highlight = totallines - 1;
+		}
+	}else
 	{
-		mvwaddstr(status_win,0,0,"Hit the button");
-		highlight = totallines - 1;
+		start = highlight - LINES + 2; /*hide one line*/
+		//end = highlight+1; /*current line is hightghit - 1*/
+		if(highlight == totallines ){ /*really at the end of the array*/
+			mvwaddstr(status_win,0,0,"Hit the bottom");
+			highlight = totallines - 1;
+			start=highlight - LINES + 1;
+		}
 	}
 
+	
+	if(totallines <= LINES-1)
+		end = totallines; /*not overlap the screen*/
+	else if(totallines >= LINES)
+		end = start + LINES;
+
 	werase(stdscr);
-	for(i = 0; i < totallines; i++)
+	for(i = start; i < end; i++)
 	{
 		if(i == highlight)
 		{
@@ -102,9 +125,9 @@ Draw_LS_OutPut()
 		/*set filename, size and type*/
 		if(type != LINE_CURSOR){
 			wattrset(stdscr,get_line_attr(LINE_FILE_NAME));
-			mvwaddstr(stdscr,i,0,lsview->fileinfo[i].name);
+			mvwaddstr(stdscr,j,0,lsview->fileinfo[i].name);
 		}else{
-			mvwaddstr(stdscr,i,0,lsview->fileinfo[i].name);
+			mvwaddstr(stdscr,j,0,lsview->fileinfo[i].name);
 		}
 		
 		//wmove(stdscr,i,40);
@@ -112,15 +135,15 @@ Draw_LS_OutPut()
 			wattrset(stdscr,get_line_attr(LINE_FILE_LINUM));
 		}
 
-		mvwaddstr(stdscr,i,40,lsview->fileinfo[i].size);
+		mvwaddstr(stdscr,j,40,lsview->fileinfo[i].size);
 
 		//wmove(stdscr,i,60);
 		if(type != LINE_CURSOR){
 			wattrset(stdscr, get_line_attr(LINE_DELIMITER));
 		}
-		mvwaddstr(stdscr,i,60,lsview->fileinfo[i].type);
-		mvwaddch(stdscr,i,COLS-1,'\n');
-		
+		mvwaddstr(stdscr,j,60,lsview->fileinfo[i].type);
+		mvwaddch(stdscr,j,COLS-1,'\n');
+		j++; /*j control the screen loop*/
 	}
 	g_change = 0; /*clear the offset*/
 }
