@@ -23,4 +23,29 @@ It just a TUI tool,you can use some keys to operate it.
 	tview ls
 	tview grep hello
 
+## Install
+
+First you need to install the `ncurses` library.
+
++ Centos
+
+	yum install ncurses
+
++ OS X
+
+	brew install ncurses
+
+Other System can use the package tool to install this library.
+
+Or install ncurses by hand:
+
+	go to http://ftp.gnu.org/gnu/ncurses/ download the ncurses package    
+	$ ./confure 
+	$ make
+	$ sudo make install
+	
+Second if you on linux, you can just run `make`.if you on Mac, you can use the
+`make -f makefile.macos`. After this, you can use the `make install` 
+
+That's done, Hope you enjoy it~
 
