@@ -45,7 +45,7 @@ static struct keymap keymap[] = {
 	{KEY_RIGHT, REQ_OPEN_VIM},
 };
 
-char *vim_cmd;
+char vim_cmd[BUFSIZ];
 
 enum commandType{
 	IS_LS,
@@ -265,10 +265,43 @@ open_view(void)
 }
 
 
+/*
+ *This function is use to update the line
+ * which will show in highlight.
+ * The render function is depend on the 
+ * command_type
+ * */
+void 
+Redraw_view(void)
+{
+	switch(command_type){
+		case IS_LS:
+			Draw_LS_OutPut();
+			redrawwin(stdscr);
+			wrefresh(stdscr);
+			break;
+		default:
+			do_nothing();
+			break;
+	}
+}
+
+
+
+
 void
 fresh_view(int key)
 {
-
+	switch(key){
+		case REQ_MOVE_DOWN:
+			g_change = 1;
+			break;
+		case REQ_MOVE_UP:
+			g_change = -1;
+			break;
+	}
+	
+	Redraw_view();
 }
 
 
@@ -288,6 +321,7 @@ view_control(int key)
 			endwin();			/*temporarily leave curses*/
 			system(vim_cmd);	/*run shell*/
 			reset_prog_mode();	/*return to the previous tty mode*/
+			refresh();
 			break;
 		case REQ_VIEW_MAIN:
 			open_view(); 

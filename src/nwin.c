@@ -94,6 +94,7 @@ Init_Screen(void)
 		init_colors();
 
 	getmaxyx(stdscr,y,x);
+	curs_set(0);
 
 	status_win = newwin(1,0,y-1,0);
 	if(!status_win)

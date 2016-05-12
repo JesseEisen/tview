@@ -24,8 +24,8 @@ struct LS_view *lsview;
 
 extern int g_current;
 extern int g_change;
-extern char * vim_cmd;
-
+extern char vim_cmd[BUFSIZ];
+extern WINDOW *status_win;
 
 /*
  * This function is used to split ls output
@@ -71,15 +71,26 @@ Draw_LS_OutPut()
 	int totallines = lsview->fileno;  
 	int i,highlight;
 	enum line_type  type;
-
+		
 	highlight = g_current + g_change;
-	g_change = 0; /*clear the offset*/
+	if(highlight < 0)
+	{
+		mvwaddstr(status_win,0,0,"At the top");
+		highlight = 0;
+	}else if(highlight >= totallines)
+	{
+		mvwaddstr(status_win,0,0,"Hit the button");
+		highlight = totallines - 1;
+	}
+
+	werase(stdscr);
 	for(i = 0; i < totallines; i++)
 	{
 		if(i == highlight)
 		{
-			//snprintf(vim_cmd,sizeof(vim_cmd), VIM_CMD,lsview->fileinfo[i].name);
+			snprintf(vim_cmd,sizeof(vim_cmd), VIM_CMD,lsview->fileinfo[i].name);
 			type = LINE_CURSOR;
+			g_current = i;
 			wattrset(stdscr, get_line_attr(type));
 			wchgat(stdscr,-1,0,type,NULL);
 		}else{
@@ -96,23 +107,22 @@ Draw_LS_OutPut()
 			mvwaddstr(stdscr,i,0,lsview->fileinfo[i].name);
 		}
 		
-		wmove(stdscr,i,40);
+		//wmove(stdscr,i,40);
 		if(type != LINE_CURSOR){
 			wattrset(stdscr,get_line_attr(LINE_FILE_LINUM));
 		}
 
-		waddstr(stdscr,lsview->fileinfo[i].size);
+		mvwaddstr(stdscr,i,40,lsview->fileinfo[i].size);
 
-		wmove(stdscr,i,60);
+		//wmove(stdscr,i,60);
 		if(type != LINE_CURSOR){
 			wattrset(stdscr, get_line_attr(LINE_DELIMITER));
 		}
-		waddstr(stdscr,lsview->fileinfo[i].type);
+		mvwaddstr(stdscr,i,60,lsview->fileinfo[i].type);
+		mvwaddch(stdscr,i,COLS-1,'\n');
 		
 	}
-	
-	
-
+	g_change = 0; /*clear the offset*/
 }
 
 
@@ -141,11 +151,7 @@ GatherOutPut_ls(FILE *fp)
 			continue;
 		}
 		GenerateFileInfo(line);
-		//mvwaddstr(stdscr,y,0,lsview->fileinfo[lsview->fileno].type);
-		//mvwaddstr(stdscr,y,40,lsview->fileinfo[lsview->fileno].size);
-		//mvwaddstr(stdscr,y,60,lsview->fileinfo[lsview->fileno].name);
 		lsview->fileno++;
-		//y++;
 	}
 	/*when all the input is saved into*/
 	Draw_LS_OutPut();
