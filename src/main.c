@@ -11,19 +11,27 @@ static const char  usage[]=
 "\n"
 "tview command [option] [pattern] [file|dir]\n"
 "\n"
-"tview just make the command's output into ncurses view\n"
-"you can use the j/k to move to the items, and you can \n"
-"use the e to open the item hightlighted\n"
+"tview moves the command's output into ncurses interface\n"
+"It just a TUI tool,you can use some keys to operate it.\n"
 "\n"
 "Option:\n"
 "	--help	   show help\n"
 "	--list	   list the current configed command\n"
 "	--ignore   ignore some dirs or files\n"
 "\n"
+"Keymap:\n"
+"	j\tmove down\n"
+"	k\tmove up\n"
+"	e\tedit with vim\n"
+"	r\treload command's output\n"
+"	q\tquit\n"
+"\n"
 "Example:\n"
 "	tview --list\n"
 "	tview ls\n"
-"	tview grep hello\n";
+"	tview grep hello\n"
+"\n";
+
 
 char * command[COMMAND_NUMS]; /*use to save the command get from config*/
 int command_plain[COMMAND_NUMS] = {0};
@@ -38,6 +46,7 @@ static struct keymap keymap[] = {
 	{'q', 		REQ_VIEW_CLOSE},
 	{'k',  		REQ_MOVE_UP},
 	{'j',  		REQ_MOVE_DOWN},
+	{'r',		REQ_RELOAD_VIEW},
 	{KEY_UP, 	REQ_MOVE_UP},
 	{KEY_DOWN, 	REQ_MOVE_DOWN},
 	
@@ -286,7 +295,20 @@ Redraw_view(void)
 	}
 }
 
-
+void
+Reload_info(void)
+{
+	switch(command_type){
+		case IS_LS:
+			RenderLs();
+			redrawwin(stdscr);
+			wrefresh(stdscr);
+			break;
+		default:
+			do_nothing();
+			break;
+	}
+}
 
 
 void
@@ -325,6 +347,9 @@ view_control(int key)
 			break;
 		case REQ_VIEW_MAIN:
 			open_view(); 
+			break;
+		case REQ_RELOAD_VIEW:
+			Reload_info();
 			break;
 		default:
 			return 1;
