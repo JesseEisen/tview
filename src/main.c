@@ -54,9 +54,14 @@ enum commandType{
 	IS_MAX,
 };
 
+int g_current;
+int g_change;
+
 /*parse mode return*/
 int command_type;
 extern WINDOW *status_win;
+
+
 
 void
 do_nothing(void)
@@ -330,7 +335,9 @@ main(int argc,char **argv)
 	command_type = parser_option(argc, argv);
 	if(command_type == -1)
 		exit(1);
-
+	
+	g_current = 0;
+	g_change = 0;
 #if CURSES_MOD == 1
 	Init_Screen();
 #endif 

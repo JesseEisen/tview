@@ -1,10 +1,13 @@
 #include "common.h"
 #include "debug.h"
+#include "nwin.h"
 
 #define LS_DEFAULT  "ls -lk"
 #define LS_WITHARG  "ls -lk %s"
 #define LS_LINELEN  64
 #define LS_FILENUMS 128
+
+#define VIM_CMD  "vim %s"
 
 struct fileinfo{
 	char name[128]; 
@@ -18,6 +21,10 @@ struct LS_view {
 };
 
 struct LS_view *lsview;
+
+extern int g_current;
+extern int g_change;
+extern char * vim_cmd;
 
 
 /*
@@ -61,7 +68,51 @@ GenerateFileInfo(char *line)
 void 
 Draw_LS_OutPut()
 {
+	int totallines = lsview->fileno;  
+	int i,highlight;
+	enum line_type  type;
+
+	highlight = g_current + g_change;
+	g_change = 0; /*clear the offset*/
+	for(i = 0; i < totallines; i++)
+	{
+		if(i == highlight)
+		{
+			//snprintf(vim_cmd,sizeof(vim_cmd), VIM_CMD,lsview->fileinfo[i].name);
+			type = LINE_CURSOR;
+			wattrset(stdscr, get_line_attr(type));
+			wchgat(stdscr,-1,0,type,NULL);
+		}else{
+			type = LINE_FILE_LINCON;
+			wchgat(stdscr,-1,0,type,NULL);
+			wattrset(stdscr,get_line_attr(LINE_FILE_NAME));
+		}
+
+		/*set filename, size and type*/
+		if(type != LINE_CURSOR){
+			wattrset(stdscr,get_line_attr(LINE_FILE_NAME));
+			mvwaddstr(stdscr,i,0,lsview->fileinfo[i].name);
+		}else{
+			mvwaddstr(stdscr,i,0,lsview->fileinfo[i].name);
+		}
 		
+		wmove(stdscr,i,40);
+		if(type != LINE_CURSOR){
+			wattrset(stdscr,get_line_attr(LINE_FILE_LINUM));
+		}
+
+		waddstr(stdscr,lsview->fileinfo[i].size);
+
+		wmove(stdscr,i,60);
+		if(type != LINE_CURSOR){
+			wattrset(stdscr, get_line_attr(LINE_DELIMITER));
+		}
+		waddstr(stdscr,lsview->fileinfo[i].type);
+		
+	}
+	
+	
+
 }
 
 
@@ -90,11 +141,11 @@ GatherOutPut_ls(FILE *fp)
 			continue;
 		}
 		GenerateFileInfo(line);
-		mvwaddstr(stdscr,y,0,lsview->fileinfo[lsview->fileno].type);
-		mvwaddstr(stdscr,y,40,lsview->fileinfo[lsview->fileno].size);
-		mvwaddstr(stdscr,y,60,lsview->fileinfo[lsview->fileno].name);
+		//mvwaddstr(stdscr,y,0,lsview->fileinfo[lsview->fileno].type);
+		//mvwaddstr(stdscr,y,40,lsview->fileinfo[lsview->fileno].size);
+		//mvwaddstr(stdscr,y,60,lsview->fileinfo[lsview->fileno].name);
 		lsview->fileno++;
-		y++;
+		//y++;
 	}
 	/*when all the input is saved into*/
 	Draw_LS_OutPut();
