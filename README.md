@@ -33,6 +33,8 @@ First you need to install the `ncurses` library.
 
 + OS X
 
+    brew tap homebrew/dupes
+
 	brew install ncurses
 
 Other System can use the package tool to install this library.
