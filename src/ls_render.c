@@ -8,6 +8,8 @@
 #define LS_FILENUMS 128
 
 #define VIM_CMD  "vim %s"
+#define VIM_FULL_PATH "vim ./%s/%s"
+#define NAME_PATH "./%s/%s"
 
 
 struct LS_view *lsview;
@@ -16,6 +18,9 @@ extern int g_current;
 extern int g_change;
 extern char vim_cmd[BUFSIZ];
 extern WINDOW *status_win;
+extern char **argvs;
+extern ls_type;
+
 
 /*
  * This function is used to split ls output
@@ -49,7 +54,16 @@ GenerateFileInfo(char *line)
 		i++;
 	}
 
-	name = lsview->fileinfo[lsview->fileno].name;
+	/*here we need to add the path to name*/
+	if(ls_type == 1){
+		char fullname[128];	
+		sprintf(fullname,NAME_PATH,argvs[2],lsview->fileinfo[lsview->fileno].name);
+		name = fullname;
+	}else{
+		name = lsview->fileinfo[lsview->fileno].name;
+	}
+
+		
 	/*second get the filetype */
 	GatherFileType(name,lsview->fileinfo[lsview->fileno].type);
 }
@@ -101,7 +115,10 @@ Draw_LS_OutPut()
 	{
 		if(i == highlight)
 		{
-			snprintf(vim_cmd,sizeof(vim_cmd), VIM_CMD,lsview->fileinfo[i].name);
+			if(ls_type == 0)
+				snprintf(vim_cmd,sizeof(vim_cmd), VIM_CMD,lsview->fileinfo[i].name);
+			else
+				snprintf(vim_cmd,sizeof(vim_cmd), VIM_FULL_PATH,argvs[2],lsview->fileinfo[i].name);
 			type = LINE_CURSOR;
 			g_current = i;
 			wattrset(stdscr, get_line_attr(type));
@@ -181,18 +198,27 @@ GatherOutPut_ls(FILE *fp)
 }
 
 
-
 /**
- * this function is to show the ls
- * default order into ncurses
+ * para: type   judge default or expand
+ * type = 0  default
+ * type = 1  expand
  * */
-void
-RenderLs_dft(void)
+void 
+RenderLs(int type)
 {
 	FILE *pipe_ls; 
-	char *lines; 
+	char *lines;
+	char cmd[BUFSIZ];
+	
 
-	pipe_ls = popen(LS_DEFAULT,"r");
+	if(type == 0)
+		pipe_ls = popen(LS_DEFAULT,"r");
+	else{
+		sprintf(cmd,LS_WITHARG,argvs[2]);
+		right_trim(cmd);
+		pipe_ls = popen(cmd,"r");
+	}
+
 	if(pipe_ls == NULL)
 		T_ERR("can't not open the pipe for ls");
 	
@@ -203,9 +229,29 @@ RenderLs_dft(void)
 
 
 void 
-RenderLs(void)
+RenderLs1(int type)
 {
-	RenderLs_dft();
-}
+	FILE *pipe_ls;
+	char *line;
+	char cmd[BUFSIZ];
 
+	sprintf(cmd,LS_WITHARG,argvs[2]);
+	pipe_ls = popen(cmd,"r");
+	
+	line = (char *)malloc(sizeof(char) * LS_LINELEN);
+	if(line == NULL)
+		T_ERR("cannot malloc space for line");
+	if(fgets(line,LS_LINELEN,pipe_ls) != NULL)
+		mvwaddstr(stdscr,4,0,line);
+	
+
+	waddstr(stdscr,argvs[2]);
+	mvwaddstr(stdscr,2,0,cmd);
+	right_trim(cmd);
+	mvwaddstr(stdscr,3,0,cmd);
+	
+	getch();
+	endwin();
+	exit(1);
+}
 

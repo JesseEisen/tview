@@ -68,9 +68,10 @@ int g_change;
 
 /*parse mode return*/
 int command_type;
+int ls_type;
 extern WINDOW *status_win;
 
-
+char **argvs;
 
 void
 do_nothing(void)
@@ -168,6 +169,7 @@ default_action(char *cmd)
 	switch(ret)
 	{
 			case CMD_LS:
+				ls_type = 0;
 				return IS_LS;
 				break;
 			case CMD_FIND:
@@ -183,6 +185,31 @@ default_action(char *cmd)
 	return -1;
 }
 
+
+static int 
+default_action_third(char *cmd)
+{
+	int ret;
+
+	ret = convert_command_tbl(cmd);
+	switch(ret)
+	{
+		case CMD_LS:
+			ls_type = 1;
+			return IS_LS;
+			break;
+		case CMD_FIND:
+			do_nothing();
+			break;
+		case CMD_GREP:
+			do_nothing();
+			break;
+		default:
+			CMD_ERR(cmd,"%s","This command may not support by ncurses");
+	}
+
+	return -1;
+}
 
 
 int 
@@ -226,7 +253,13 @@ parser_option(int argc, char **argv)
 	 * 
 	 * * **/
 	if(argc == 3)
-
+	{
+		if(compare_command(argv[1])) /*command with parameter*/
+		{
+			ret = default_action_third(argv[1]);
+			return ret;
+		}
+	}
 
 	return -1;
 }
@@ -268,7 +301,7 @@ open_view(void)
 {
 	switch(command_type){
 		case IS_LS:
-			RenderLs();
+			RenderLs(ls_type);
 			break;
 		case IS_GREP:
 			RenderGrep();
@@ -309,7 +342,7 @@ Reload_info(void)
 {
 	switch(command_type){
 		case IS_LS:
-			RenderLs();
+			RenderLs(ls_type);
 			redrawwin(stdscr);
 			wrefresh(stdscr);
 			break;
@@ -388,19 +421,22 @@ main(int argc,char **argv)
 {
 	FILE *fp;
 	char ch;
-	
+
 	enum request request;
 	request = REQ_VIEW_MAIN;
 
 	fp = fopen("config","r+");
 	if(fp == NULL)
 		T_ERR("cannot read the file config!\nplease checkout the file is exist\n");
+	
+	argvs = argv;
 
 	load_command(fp);
 	fclose(fp);
 	convert_command();
 	
 	command_type = parser_option(argc, argv);
+	printf("command_type:%d\n",command_type);
 	if(command_type == -1)
 		exit(1);
 	
@@ -410,12 +446,13 @@ main(int argc,char **argv)
 	Init_Screen();
 #endif 
 	
+#if CURSES_MOD == 1
 	while(view_control(request))
 	{
 		 ch = wgetch(status_win);
 		 request = get_request(ch);
 	}
-
+#endif
 
 #if CURSES_MOD == 1
 	getch();
