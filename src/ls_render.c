@@ -9,16 +9,6 @@
 
 #define VIM_CMD  "vim %s"
 
-struct fileinfo{
-	char name[128]; 
-	char type[32];  /*filetype: dir/regular/pipe/...*/
-	char size[32];
-};
-
-struct LS_view {
-	struct fileinfo *fileinfo;
-	int  fileno;
-};
 
 struct LS_view *lsview;
 
@@ -153,7 +143,8 @@ void
 GatherOutPut_ls(FILE *fp)
 {
 	char *line = NULL;
-	int y = 0;
+	void *new_space;
+	int y = 0, is_expand = 0;
 	char type[32];
 	char size[32];
 
@@ -175,6 +166,14 @@ GatherOutPut_ls(FILE *fp)
 		}
 		GenerateFileInfo(line);
 		lsview->fileno++;
+		if(is_expand == 0 && lsview->fileno > 128)
+		{	
+			new_space = realloc(lsview->fileinfo, sizeof(struct fileinfo) * 128);	
+			if(new_space == NULL)
+				T_ERR("cannot realloc more space for lsview");
+			lsview->fileinfo =(struct fileinfo *) new_space;
+			is_expand = 1;
+		}
 	}
 	/*when all the input is saved into*/
 	Draw_LS_OutPut();

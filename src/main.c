@@ -218,6 +218,15 @@ parser_option(int argc, char **argv)
 			show_usage();
 		}
 	}
+	
+	/**
+	 * Here may be some suitations
+	 * 1. tview command directory
+	 * 2. tview command pattern
+	 * 
+	 * * **/
+	if(argc == 3)
+
 
 	return -1;
 }

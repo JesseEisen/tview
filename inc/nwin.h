@@ -40,5 +40,15 @@ struct line_infos{
 	int fg, bg, attr;   /*Color and text attribution for the lines*/
 };
 
+struct fileinfo{
+	char name[128]; 
+	char type[32];  /*filetype: dir/regular/pipe/...*/
+	char size[32];
+};
+
+struct LS_view {
+	struct fileinfo *fileinfo;
+	int  fileno;
+};
 
 #endif /*nwin.h*/

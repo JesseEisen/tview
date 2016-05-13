@@ -12,13 +12,23 @@ struct line_infos line_info[] = {
 
 BOOL cursed = FALSE;
 WINDOW *status_win;
+extern struct LS_view *lsview;
+
+void 
+clean_memory(void)
+{
+	free(lsview->fileinfo);
+	free(lsview);
+}
+
 
 void __NORETURN
 quit(int sig)
 {
 	if(cursed)
 		endwin();
-
+	
+	clean_memory();
 	exit(0);
 }
 
