@@ -1,5 +1,5 @@
 all:
-	gcc -g src/main.c src/find_render.c src/util.c src/ls_render.c src/nwin.c src/grep_render.c -o bin/tview -I./inc  -I/usr/local/opt/ncurses/include  -L/usr/local/opt/ncurses/lib -lncurses
+	gcc -g src/main.c src/find_render.c src/util.c src/ls_render.c src/nwin.c src/grep_render.c -o bin/tview  -I/usr/local/opt/ncurses/include -I./inc  -L/usr/local/opt/ncurses/lib -lncurses
 
 install:
 	cp ./bin/tview /usr/local/bin/
