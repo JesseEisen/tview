@@ -4,6 +4,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#include<ncurses.h>
 
 #define TVIEW_DBG 1
 
@@ -19,7 +20,7 @@
 
 
 #define T_ERR(fmt, ...) \
-	do{printf(fmt,##__VA_ARGS__), exit(2);}while(1)
+	do{endwin();printf(fmt,##__VA_ARGS__), exit(2);}while(1)
 
 #define CMD_LOG(cmd,fmt,...) \
 	do{printf("%s:"fmt,cmd,##__VA_ARGS__);}while(0)

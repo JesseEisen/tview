@@ -199,10 +199,10 @@ default_action_third(char *cmd)
 			return IS_LS;
 			break;
 		case CMD_FIND:
-			do_nothing();
+			return IS_FIND;
 			break;
 		case CMD_GREP:
-			do_nothing();
+			return IS_GREP;
 			break;
 		default:
 			CMD_ERR(cmd,"%s","This command may not support by ncurses");

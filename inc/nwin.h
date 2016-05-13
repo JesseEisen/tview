@@ -46,9 +46,20 @@ struct fileinfo{
 	char size[32];
 };
 
+struct fileinfo_grep{
+	char name[128];
+	char location[16];
+	char content[128];
+};
+
 struct LS_view {
 	struct fileinfo *fileinfo;
 	int  fileno;
+};
+
+struct Grep_view{
+	struct fileinfo_grep *grepinfo;
+	int lineidx;
 };
 
 #endif /*nwin.h*/

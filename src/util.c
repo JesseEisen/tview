@@ -4,6 +4,14 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+inline void
+string_ncopy(char *dst, const char *src, int len)
+{
+	strncpy(dst, src, len-1);
+	dst[dstlen-1] = '\0';
+}
+
+
 char *
 T_strdup(const char *str)
 {
@@ -15,6 +23,23 @@ T_strdup(const char *str)
 	memcpy(copy, str,len);
 	return copy;
 }
+
+char *
+left_trim(char *str)
+{
+	int len = strlen(str);
+	char *cur = str;
+
+	while(*cur && isspace(*cur)){
+		++cur;
+		--len;
+	}
+	
+	if(str != cur) memmove(str,cur,len+1);
+
+	return str;
+}
+
 
 char *
 right_trim(char *str)
@@ -29,6 +54,33 @@ right_trim(char *str)
 
 	return str;
 }
+
+char *
+trim(char *str){
+	trim_right(str);
+	trim_left(str);
+
+	return str;
+}
+
+char *
+strsplit(const char *line, const char c)
+{
+	int i = 0;
+	static char word[BUFSIZ];
+
+	memset(word,0,sizeof(BUFSIZ));
+	while (*line != c){
+		word[i++] = *line;
+		line++;
+	}
+
+	word[i] = '\0';
+	return word;
+}
+
+
+
 
 void 
 GatherFileType(const char *name, char *type)
