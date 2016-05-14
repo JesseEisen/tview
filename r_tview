@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if [ ! -e config ]; then
+	touch config
+	echo "ls" >> config
+	echo "grep" >> config
+	echo "find" >> config
+fi
+
+view "$@"

@@ -13,12 +13,20 @@ struct line_infos line_info[] = {
 BOOL cursed = FALSE;
 WINDOW *status_win;
 extern struct LS_view *lsview;
+extern struct Grep_view *gview;
+extern command_type;
+
 
 void 
 clean_memory(void)
 {
-	free(lsview->fileinfo);
-	free(lsview);
+	if(command_type == 0){
+		free(lsview->fileinfo);
+		free(lsview);
+	}else if(command_type == 2){
+		free(gview->grepinfo);
+		free(gview);
+	}
 }
 
 
@@ -28,7 +36,7 @@ quit(int sig)
 	if(cursed)
 		endwin();
 	
-	//clean_memory();
+	clean_memory();
 	exit(0);
 }
 

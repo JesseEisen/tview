@@ -169,11 +169,16 @@ GatherOutPut_grep(FILE *fp)
 	if(gview->lineidx == 0){
 		endwin();
 		printf("can not find anything\n");
+		free(gview->grepinfo);
+		free(gview);
+		exit(1);
 	}else{
 		Draw_Grep_OutPut();
 		refresh();
 	}
 #endif 
+
+	free(line);
 }
 
 

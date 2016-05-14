@@ -181,6 +181,9 @@ GatherOutPut_ls(FILE *fp)
 			y++;
 			continue;
 		}
+		if(line == NULL)
+			continue;
+
 		GenerateFileInfo(line);
 		lsview->fileno++;
 		if(is_expand == 0 && lsview->fileno > 128)
@@ -193,8 +196,15 @@ GatherOutPut_ls(FILE *fp)
 		}
 	}
 	/*when all the input is saved into*/
+	if(lsview->fileno == 0)
+	{
+		endwin();
+		printf("can not get any output from ls\n");
+	}
 	Draw_LS_OutPut();
 	refresh();
+
+	free(line);
 }
 
 

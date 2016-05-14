@@ -434,7 +434,8 @@ main(int argc,char **argv)
 
 	enum request request;
 	request = REQ_VIEW_MAIN;
-
+	
+	
 	fp = fopen("config","r+");
 	if(fp == NULL)
 		T_ERR("cannot read the file config!\nplease checkout the file is exist\n");
