@@ -69,7 +69,7 @@ strsplit(const char *line, const char c)
 {
 	int i = 0;
 	static char word[BUFSIZ];
-
+	
 	memset(word,0,sizeof(BUFSIZ));
 	while (*line != c){
 		word[i++] = *line;

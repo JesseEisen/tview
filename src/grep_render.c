@@ -158,16 +158,22 @@ GatherOutPut_grep(FILE *fp)
 	if(gview->grepinfo == NULL)
 		T_ERR("cannot malloc space for grepinfo");
 	gview->lineidx = 0;
-
+#if 1
 	while(fgets(line,COLS,fp) != NULL)
 	{
-		GeneratelineInfo(line);
-		gview->lineidx++;
+		if(line != NULL){
+			GeneratelineInfo(line);
+			gview->lineidx++;
+		}
 	}
-
-	Draw_Grep_OutPut();
-	refresh();
-
+	if(gview->lineidx == 0){
+		endwin();
+		printf("can not find anything\n");
+	}else{
+		Draw_Grep_OutPut();
+		refresh();
+	}
+#endif 
 }
 
 
@@ -189,6 +195,32 @@ RenderGrep(void)
 
 	pclose(pipe_grep);
 	
+}
+
+void 
+RenderGrep1(void)
+{
+	FILE *pipe_grep;
+	char *line;
+	char cmd[BUFSIZ];
+
+	snprintf(cmd,sizeof(cmd),GREP_CMD,argvs[2]);
+	right_trim(cmd);
+
+	pipe_grep = popen(cmd,"r");
+	if(pipe_grep == NULL)
+		T_ERR("cannot open pipe");
+
+	line = (char *)malloc(sizeof(char) * 80);
+	if(fgets(line,80,pipe_grep) != NULL);
+		mvwaddstr(stdscr,4,0,line);
+
+	GatherOutPut_grep(pipe_grep);
+	GeneratelineInfo(line);
+
+	getch();
+	endwin();
+	exit(1);
 }
 
 
