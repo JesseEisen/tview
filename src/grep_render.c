@@ -5,7 +5,7 @@
 #define GREP_CMD "grep -arn %s *"
 #define VIM_CMD_R "vim +%s %s"
 
-struct Grep_view gview;
+struct Grep_view *gview;
 
 
 extern WINDOW *status_win;
@@ -26,8 +26,9 @@ Draw_Grep_OutPut(void)
 {
 	int totallines = gview->lineidx;
 	int i, highlight,j=0;
-	int start, end;
+	int start, end, len;
 	enum line_type type;
+	char *fnumber, *fname;
 
 	start = 0; /*first set the start frome the line buffer*/
 	highlight = g_current + g_change;
@@ -35,7 +36,7 @@ Draw_Grep_OutPut(void)
 	{
 		mvwaddstr(status_win,0,0,"At the top");
 		highlight = 0;
-	}else if(highlight < LINE - 2){ /*full of the screen*/
+	}else if(highlight < LINES - 2){ /*full of the screen*/
 		if(highlight == totallines){ /*at the end of the screen*/
 			mvwaddstr(status_win,0,0,"At the end");
 			highlight = totallines - 1;
@@ -56,13 +57,64 @@ Draw_Grep_OutPut(void)
 
 	/*when we do this render we need to consider the length of content*/
 	werase(stdscr);
-	for(i = start, i < end; i++)
+	for(i = start; i < end; i++)
 	{
 		if(i == highlight)
 		{
-			snprintf(vim_cmd,sizeof(vim_cmd),VIM_CMD_R,gview->grepinfo[lineidx].location,gview->grepinfo[lineidx].name);
+			fnumber = gview->grepinfo[i].location;
+			fname = gview->grepinfo[i].name;
+			right_trim(fnumber);
+			right_trim(fname);
+			snprintf(vim_cmd,sizeof(vim_cmd),VIM_CMD_R,fnumber,fname);
+			type = LINE_CURSOR;
+			g_current = i;
+			wattrset(stdscr,get_line_attr(type));
+			wchgat(stdscr,-1,0,type,NULL);
+		}else{
+			type = LINE_FILE_LINCON;
+			wchgat(stdscr,-1,0,type,NULL);
+			wattrset(stdscr,get_line_attr(LINE_FILE_NAME));
 		}
+
+		/*first set filename, in grep the filename may contain t
+		 * the path, so the length of it should be controled.
+		 * */
+		len = strlen(gview->grepinfo[i].name);
+		if(len > 25) {/*the lenght is out of name len range*/
+		   if(type != LINE_CURSOR) /*normal line */
+				wattrset(stdscr,get_line_attr(LINE_DELIMITER));
+			mvwaddch(stdscr,j,0,'~'); /*hide some character*/
+			if(type != LINE_CURSOR)
+				wattrset(stdscr,get_line_attr(LINE_FILE_NAME));
+			mvwaddnstr(stdscr,j,1,gview->grepinfo[i].name+(len-25),24);				
+		}else{
+			mvwaddstr(stdscr,j,0,gview->grepinfo[i].name);
+		}
+
+		/*add the location*/
+		if(type != LINE_CURSOR){
+			wattrset(stdscr,get_line_attr(LINE_FILE_LINUM));
+		}
+		mvwaddstr(stdscr,j,30,gview->grepinfo[i].location);
+
+		/*add content, the content may out of the length,so we still
+		 * need to hide some text*/
+		len = strlen(gview->grepinfo[i].content);
+		if(len > 30){
+			if(type != LINE_CURSOR)
+				wattrset(stdscr,get_line_attr(LINE_DELIMITER));
+			mvwaddnstr(stdscr,j,45,gview->grepinfo[i].content,COLS-47);
+			if(type != LINE_CURSOR)
+				wattrset(stdscr,get_line_attr(LINE_FILE_NAME));
+			mvwaddch(stdscr,j,COLS-2,'~');
+		}else{
+			mvwaddstr(stdscr,j,45,gview->grepinfo[i].content);
+		}
+		
+		mvwaddch(stdscr,j,COLS-1,'\n');
+		j++;
 	}
+	g_change = 0; /*clear the offset*/
 }
 
 
@@ -76,16 +128,16 @@ GeneratelineInfo(char *line)
 {
 	char *end;
 	
-	string_cpy(gview->grepinfo[lineidx].name,strsplit(line,':'));
+	string_cpy(gview->grepinfo[gview->lineidx].name,strsplit(line,':'));
 
 	end = strchr(line,':');
 	end += 1; /*overlap colon*/
-	string_cpy(gview->grepinfo[lineidx].location,strsplit(end,':'));
+	string_cpy(gview->grepinfo[gview->lineidx].location,strsplit(end,':'));
 
-	end = strchr(line,':');
+	end = strchr(end,':');
 	end += 1;
 	trim(end); /*clear the space and newline character*/
-	string_cpy(gview->grepinfo[lineidx].content,end);
+	string_cpy(gview->grepinfo[gview->lineidx].content,end);
 	
 }
 
@@ -127,13 +179,15 @@ RenderGrep(void)
 	FILE *pipe_grep;
 	char cmd[BUFSIZ];
 	
-	pipe_grep = popen(GREP_CMD,"r");
+	snprintf(cmd,sizeof(cmd),GREP_CMD,argvs[2]);
+	right_trim(cmd);
+	pipe_grep = popen(cmd,"r");
 	if(pipe_grep == NULL)
 		T_ERR("can't not open the pipe for grep");
 
 	GatherOutPut_grep(pipe_grep);
 
-	pclose(pipe_ls);
+	pclose(pipe_grep);
 	
 }
 

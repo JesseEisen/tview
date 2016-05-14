@@ -28,7 +28,7 @@ quit(int sig)
 	if(cursed)
 		endwin();
 	
-	clean_memory();
+	//clean_memory();
 	exit(0);
 }
 

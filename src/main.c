@@ -331,6 +331,11 @@ Redraw_view(void)
 			redrawwin(stdscr);
 			wrefresh(stdscr);
 			break;
+		case IS_GREP:
+			Draw_Grep_OutPut();
+			redrawwin(stdscr);
+			wrefresh(stdscr);
+			break;
 		default:
 			do_nothing();
 			break;
@@ -343,6 +348,11 @@ Reload_info(void)
 	switch(command_type){
 		case IS_LS:
 			RenderLs(ls_type);
+			redrawwin(stdscr);
+			wrefresh(stdscr);
+			break;
+		case IS_GREP:
+			RenderGrep();
 			redrawwin(stdscr);
 			wrefresh(stdscr);
 			break;
@@ -436,7 +446,6 @@ main(int argc,char **argv)
 	convert_command();
 	
 	command_type = parser_option(argc, argv);
-	printf("command_type:%d\n",command_type);
 	if(command_type == -1)
 		exit(1);
 	

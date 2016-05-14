@@ -4,11 +4,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+
 inline void
 string_ncopy(char *dst, const char *src, int len)
 {
 	strncpy(dst, src, len-1);
-	dst[dstlen-1] = '\0';
+	dst[len-1] = '\0';
 }
 
 
@@ -57,8 +58,8 @@ right_trim(char *str)
 
 char *
 trim(char *str){
-	trim_right(str);
-	trim_left(str);
+	right_trim(str);
+	left_trim(str);
 
 	return str;
 }
