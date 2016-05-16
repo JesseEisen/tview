@@ -28,9 +28,6 @@ tview:
 
 clean:
 	rm -rf bin/tview
-	if [ -z core* ];then
-		rm -rf core*
-	fi
 
 install:
 	cp ./bin/tview /usr/local/bin/view
