@@ -26,6 +26,6 @@
 	do{printf("%s:"fmt,cmd,##__VA_ARGS__);}while(0)
 
 #define CMD_ERR(cmd,fmt,...) \
-	do{printf("%s:",fmt,cmd,##__VA_ARGS__); exit(1);}while(0)
+	do{printf("%s:"fmt,cmd,##__VA_ARGS__); exit(1);}while(0)
 
 #endif /*head define*/

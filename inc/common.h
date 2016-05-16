@@ -24,7 +24,7 @@
 
 
 
-static inline 
+static inline void
 UPPER_STR(char *s)
 {
 	char *p = s;
@@ -68,6 +68,10 @@ struct keymap{
 	int request;
 };
 
+char *strsplit(const char *, const char);
+char *trim(char *);
+inline void string_ncopy(char *, const char * ,int);
+void GatherFileType(const char *, char *);
 
 
 #endif /*head define*/

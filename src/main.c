@@ -1,6 +1,6 @@
+#include "nwin.h"
 #include "common.h"
 #include "debug.h"
-#include "nwin.h"
 
 
 #define COMMAND_NUMS  32
@@ -31,6 +31,17 @@ static const char  usage[]=
 "	tview ls\n"
 "	tview grep hello\n"
 "\n";
+
+
+extern WINDOW *status_win;
+extern void RenderLs(int);
+extern void RenderGrep(void);
+extern void RenderFind(void);
+extern void Draw_LS_OutPut(void);
+extern void Draw_Grep_OutPut(void);
+extern void quit(int);
+extern char * right_trim(char *);
+extern void Init_Screen(void);
 
 
 char * command[COMMAND_NUMS]; /*use to save the command get from config*/
@@ -69,7 +80,7 @@ int g_change;
 /*parse mode return*/
 int command_type;
 int ls_type;
-extern WINDOW *status_win;
+
 
 char **argvs;
 
@@ -233,7 +244,7 @@ parser_option(int argc, char **argv)
 		{
 			ret = default_action(argv[1]);
 			return ret;	
-		}else if(ret = compare_option(argv[1]))
+		}else if((ret = compare_option(argv[1])))
 		{
 			if(ret == 1)
 				show_usage();

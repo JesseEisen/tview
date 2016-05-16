@@ -62,4 +62,16 @@ struct Grep_view{
 	int lineidx;
 };
 
+/*some function define*/
+void RenderLs(int);
+void RenderGrep(void);
+void RenderFind(void);
+void Draw_LS_OutPut(void);
+void Draw_Grep_OutPut(void);
+void quit(int);
+char * right_trim(char *);
+void Init_Screen(void);
+inline int get_line_attr(enum line_type);
+
+
 #endif /*nwin.h*/

@@ -14,7 +14,7 @@ BOOL cursed = FALSE;
 WINDOW *status_win;
 extern struct LS_view *lsview;
 extern struct Grep_view *gview;
-extern command_type;
+extern int command_type;
 
 
 void 

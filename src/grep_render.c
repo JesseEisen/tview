@@ -100,7 +100,7 @@ Draw_Grep_OutPut(void)
 		/*add content, the content may out of the length,so we still
 		 * need to hide some text*/
 		len = strlen(gview->grepinfo[i].content);
-		if(len > 30){
+		if(len > 50){
 			if(type != LINE_CURSOR)
 				wattrset(stdscr,get_line_attr(LINE_DELIMITER));
 			mvwaddnstr(stdscr,j,45,gview->grepinfo[i].content,COLS-47);

@@ -19,7 +19,7 @@ extern int g_change;
 extern char vim_cmd[BUFSIZ];
 extern WINDOW *status_win;
 extern char **argvs;
-extern ls_type;
+extern int ls_type;
 
 
 /*
@@ -79,7 +79,7 @@ Draw_LS_OutPut()
 {
 	int totallines = lsview->fileno;  
 	int i,highlight,j=0;
-	int start, end;
+	int start = 0, end = 0;
 	enum line_type  type;
 	
 	start = 0;
@@ -162,8 +162,6 @@ GatherOutPut_ls(FILE *fp)
 	char *line = NULL;
 	void *new_space;
 	int y = 0, is_expand = 0;
-	char type[32];
-	char size[32];
 
 	line = (char *)malloc(sizeof(char) * LS_LINELEN);
 	if(line == NULL)
@@ -217,7 +215,6 @@ void
 RenderLs(int type)
 {
 	FILE *pipe_ls; 
-	char *lines;
 	char cmd[BUFSIZ];
 	
 
