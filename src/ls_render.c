@@ -227,7 +227,7 @@ RenderLs(int type)
 	}
 
 	if(pipe_ls == NULL)
-		T_ERR("can't not open the pipe for ls");
+		T_ERR("can not open the pipe for ls");
 	
 	GatherOutPut_ls(pipe_ls);
 

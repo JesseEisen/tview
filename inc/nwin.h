@@ -52,6 +52,12 @@ struct fileinfo_grep{
 	char content[128];
 };
 
+struct fileinfo_find{
+	char name[128];
+	char path[128];
+	char type[32];
+};
+
 struct LS_view {
 	struct fileinfo *fileinfo;
 	int  fileno;
@@ -61,6 +67,26 @@ struct Grep_view{
 	struct fileinfo_grep *grepinfo;
 	int lineidx;
 };
+
+struct Find_view{
+	struct fileinfo_find *findinfo;
+	int lineidx;
+};
+
+enum find_command{
+	FIND_DEFAULT,
+	FIND_WITH_PATH,
+	FIND_WITH_DEPTH_MAX,
+	FIND_WITH_DEPTH_MIN,
+	FIND_WITH_TYPE,
+	FIND_FULL,
+	FIND_REVERSE,
+};
+
+typedef struct{
+	int type;
+	char *command;
+}FindCmd;
 
 /*some function define*/
 void RenderLs(int);

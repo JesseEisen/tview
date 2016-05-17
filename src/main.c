@@ -6,6 +6,8 @@
 #define COMMAND_NUMS  32
 #define CURSES_MOD  1
 
+#define COVERT_STR_CHAR(c,s)  (c = (char)(*s))
+
 static const char  usage[]=
 "Usage for tview\n"
 "\n"
@@ -39,6 +41,7 @@ extern void RenderGrep(void);
 extern void RenderFind(void);
 extern void Draw_LS_OutPut(void);
 extern void Draw_Grep_OutPut(void);
+extern void Draw_Find_OutPut(void);
 extern void quit(int);
 extern char * right_trim(char *);
 extern void Init_Screen(void);
@@ -80,9 +83,29 @@ int g_change;
 /*parse mode return*/
 int command_type;
 int ls_type;
-
+int find_type;
+char find_file_type[7] = {'b','c','d','p','f','l','s'};
+char level;
 
 char **argvs;
+
+static inline void
+show_find_usage(void)
+{
+	printf("Command find can support those type:\n\n");
+	printf("\t1.find . -name [filename|directory name]\n"
+			"\t2.find [path] -name [filename|directory name]\n"
+			"\t3.find . -maxdepth=[g+level] -name [filename|directory name]\n"
+			"\t4.find . -mindepth=[l+level] -name [filename|directory name]\n"
+			"\t5.find . -type [type] -name [filename|directory name]\n"
+			"\t6.find [path] -type [type] -name [filename|directory]\n");
+	printf("\nExample\n");
+	printf("\ttview find src\n"
+			"\ttview find /home/john src\n"
+			"\ttview find g3 src\n"
+		 	"\ttview find /home/john d src\n");
+}
+
 
 void
 do_nothing(void)
@@ -184,7 +207,7 @@ default_action(char *cmd)
 				return IS_LS;
 				break;
 			case CMD_FIND:
-				CMD_LOG("find","%s\n","argument is needed");
+				show_find_usage();
 				break;
 			case CMD_GREP:
 				CMD_LOG("grep","%s\n","argument is needed");
@@ -210,6 +233,7 @@ default_action_third(char *cmd)
 			return IS_LS;
 			break;
 		case CMD_FIND:
+			find_type = FIND_DEFAULT; //find . -name argv[2];
 			return IS_FIND;
 			break;
 		case CMD_GREP:
@@ -221,6 +245,61 @@ default_action_third(char *cmd)
 
 	return -1;
 }
+
+static int
+check_find_type(char *arg)
+{
+	char ch;
+	int i;
+
+	COVERT_STR_CHAR(ch,arg);
+	
+	for(i = 0; i<7;i++)
+	{
+		if(ch == find_file_type[i])
+			return 1;
+	}	
+
+	return -1;
+}
+
+void
+find_action_parse()
+{
+	int len;
+	int ret;
+
+	len = strlen(argvs[2]);
+	/**
+	 * Here may encounter those suitation
+	 * 1. find level name
+	 * 2. find type name
+	 * */
+	if(len == 1){
+		ret = check_find_type(argvs[2]);
+		if(ret == 1){
+			find_type = FIND_WITH_TYPE;
+			return;
+		}else{
+			printf("File type is wrong, please refer man page of find\n");
+			exit(1);
+		}	
+	}else if(len == 2) /*level*/
+	{
+		if(*argvs[2] == 'b')
+			find_type = FIND_WITH_DEPTH_MAX;
+		else if(*argvs[2] == 's')
+			find_type = FIND_WITH_DEPTH_MIN;
+		level = (*(argvs[2]+1));
+		return;
+	}else{
+		printf("you may specify wrong paramter\n please check the usage of find\n\t tview find \n");
+		exit(1);
+	}
+	
+	find_type = FIND_WITH_PATH;
+}
+
 
 
 int 
@@ -271,6 +350,22 @@ parser_option(int argc, char **argv)
 			return ret;
 		}
 	}
+
+
+	if(argc == 4)
+	{
+		ret = IS_FIND;
+		find_action_parse(argv[1]);
+		return ret;
+	}
+
+	if(argc == 5)
+	{
+		ret = IS_FIND;
+		find_type = FIND_FULL;
+		return ret;
+	}
+	
 
 	return -1;
 }
@@ -339,18 +434,19 @@ Redraw_view(void)
 	switch(command_type){
 		case IS_LS:
 			Draw_LS_OutPut();
-			redrawwin(stdscr);
-			wrefresh(stdscr);
 			break;
 		case IS_GREP:
 			Draw_Grep_OutPut();
-			redrawwin(stdscr);
-			wrefresh(stdscr);
+			break;
+		case IS_FIND:
+			Draw_Find_OutPut();
 			break;
 		default:
 			do_nothing();
 			break;
 	}
+	redrawwin(stdscr);
+	wrefresh(stdscr);
 }
 
 void
@@ -359,18 +455,19 @@ Reload_info(void)
 	switch(command_type){
 		case IS_LS:
 			RenderLs(ls_type);
-			redrawwin(stdscr);
-			wrefresh(stdscr);
 			break;
 		case IS_GREP:
 			RenderGrep();
-			redrawwin(stdscr);
-			wrefresh(stdscr);
+			break;
+		case IS_FIND:
+			RenderFind();
 			break;
 		default:
 			do_nothing();
 			break;
 	}
+	redrawwin(stdscr);
+	wrefresh(stdscr);
 }
 
 
@@ -465,6 +562,7 @@ main(int argc,char **argv)
 	g_change = 0;
 #if CURSES_MOD == 1
 	Init_Screen();
+	mvwaddstr(stdscr,LINES/2,COLS/2,"Loading......");
 #endif 
 	
 #if CURSES_MOD == 1
