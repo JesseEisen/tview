@@ -55,7 +55,7 @@ view_err(const char *err, ...)
 	exit(1);
 }
 
-inline int get_line_attr(enum line_type type)
+int get_line_attr(enum line_type type)
 {
 	assert(type < array_size(line_info));
 	return COLOR_PAIR(type) | line_info[type].attr;

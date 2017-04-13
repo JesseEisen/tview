@@ -70,7 +70,7 @@ struct keymap{
 
 char *strsplit(const char *, const char);
 char *trim(char *);
-inline void string_ncopy(char *, const char * ,int);
+void string_ncopy(char *, const char * ,int);
 void GatherFileType(const char *, char *);
 
 

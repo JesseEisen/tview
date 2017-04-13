@@ -18,8 +18,8 @@ LINK_C_DIRS = \
 
 CC = gcc 
 
-LCFLAGS += -g -Wall -O1
-LCFLAGS += -Wuninitialized
+LCFLAGS += -g #-Wall -O1
+#LCFLAGS += -Wuninitialized
 
 LINKFLAG += -lncurses
 
